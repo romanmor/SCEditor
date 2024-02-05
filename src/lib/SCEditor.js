@@ -424,9 +424,13 @@ export default function SCEditor(original, userOptions) {
 	 * @private
 	 */
 	function sanitize(html) {
+		const allowedTags = ['iframe'].concat(options.allowedTags);
+		const allowedAttrs = ['allowfullscreen', 'frameborder', 'target']
+			.concat(options.allowedAttributes);
+
 		return domPurify.sanitize(html, {
-			ADD_TAGS: ['iframe'],
-			ADD_ATTR: ['allowfullscreen', 'frameborder', 'target']
+			ADD_TAGS: allowedTags,
+			ADD_ATTR: allowedAttrs
 		});
 	};
 
@@ -1727,6 +1731,8 @@ export default function SCEditor(original, userOptions) {
 		// Fix any invalid nesting, e.g. if a quote or other block is inserted
 		// into a paragraph
 		dom.fixNesting(wysiwygBody);
+
+		wrapInlines(wysiwygBody, wysiwygDocument);
 
 		// Scroll the editor after the end of the selection
 		marker   = dom.find(wysiwygBody, '#sceditor-end-marker')[0];

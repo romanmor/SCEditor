@@ -2,7 +2,9 @@
 	// Report QUnit results to SauceLabs
 	var log = [];
 
-	QUnit.done(function (testResults) {
+	QUnit.config.autostart = false;
+
+	QUnit.on('runEnd', function (testResults) {
 		var tests = [];
 
 		for (var i = 0, len = log.length; i < len; i++) {
@@ -22,15 +24,6 @@
 		if (window.__grunt_contrib_qunit__) {
 			window.__grunt_contrib_qunit__('qunit.coverage', window.__coverage__);
 		}
-	});
-
-	QUnit.testStart(function (testDetails) {
-		QUnit.log = function (details) {
-			if (!details.result) {
-				details.name = testDetails.name;
-				log.push(details);
-			}
-		};
 	});
 
 	// Add moduleSetup and moduleTeardown properties to the
@@ -62,4 +55,17 @@
 
 		oldModule(name, settings);
 	};
+
+	QUnit.on('testStart', function (testDetails) {
+		QUnit.log = function (details) {
+			if (!details.result) {
+				details.name = testDetails.name;
+				log.push(details);
+			}
+		};
+	});
+
+	less.pageLoadFinished.then(() => {
+		QUnit.start();
+	});
 }());

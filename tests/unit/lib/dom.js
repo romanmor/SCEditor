@@ -1,8 +1,6 @@
 import * as dom from 'src/lib/dom.js';
 import * as utils from 'tests/unit/utils.js';
 
-var IS_PHANTOMJS = navigator.userAgent.indexOf('PhantomJS') > -1;
-
 QUnit.module('lib/dom');
 
 QUnit.test('createElement() - Simple', function (assert) {
@@ -118,12 +116,6 @@ QUnit.test('on()', function (assert) {
 });
 
 QUnit.test('on() - Selector', function (assert) {
-	// PhantomJS sets the wrong event.target for dispatch event
-	if (IS_PHANTOMJS) {
-		assert.expect(0);
-		return;
-	}
-
 	var div = document.createElement('div');
 	var p = document.createElement('p');
 	var called = false;
@@ -1817,6 +1809,25 @@ QUnit.test('merge() - deep with siblings', function (assert) {
 				'<strong>' +
 					'<em>2345</em>' +
 				'</strong>' +
+			'</div>'
+		)
+	);
+});
+
+QUnit.test('merge() - <br> tags should not merge', function (assert) {
+	var node = utils.htmlToNode(
+		'<div>' +
+			'<br><br><br>' +
+		'</div>'
+	);
+
+	dom.merge(node);
+
+	assert.nodesEqual(
+		node,
+		utils.htmlToNode(
+			'<div>' +
+				'<br><br><br>' +
 			'</div>'
 		)
 	);

@@ -39,7 +39,56 @@ QUnit.test('From BBCode method as fragment', function (assert) {
 	assert.htmlEqual(
 		this.mockEditor.fromBBCode('[b]test[/b]', true),
 		'<strong>test</strong>',
-		'As fragment'
+		'Should not wrap fragments in blocks'
+	);
+
+	assert.htmlEqual(
+		this.mockEditor.fromBBCode(
+			'line1[b]test[/b][center]line2[/center]line3[b]test[/b]',
+			true
+		),
+		'line1<strong>test</strong>' +
+		'<div align="center">line2<br /></div>' +
+		'line3<strong>test</strong>',
+		'Should not wrap inlines with a block in between'
+	);
+
+	assert.htmlEqual(
+		this.mockEditor.fromBBCode(
+			'\n\n',
+			true
+		),
+		'<br /><br />',
+		'Should preserve newlines'
+	);
+
+	assert.htmlEqual(
+		this.mockEditor.fromBBCode(
+			'[none]test[/none]',
+			true
+		),
+		'[none]test[/none]',
+		'Should not alter nonexistent BBCodes'
+	);
+
+	assert.htmlEqual(
+		this.mockEditor.fromBBCode(
+			'[center]line1[/center][center]line2[/center][center]line3[/center]',
+			true
+		),
+		'<div align="center">line1<br /></div>' +
+		'<div align="center">line2<br /></div>' +
+		'<div align="center">line3<br /></div>',
+		'Should keep all styled blocks created by a BBCode'
+	);
+
+	assert.htmlEqual(
+		this.mockEditor.fromBBCode(
+			'\nline2\n',
+			true
+		),
+		'<br />line2<br />',
+		'Should not wrap newlines'
 	);
 });
 
@@ -541,20 +590,33 @@ QUnit.test('colour', function (assert) {
 	);
 
 	assert.equal(
-		this.htmlToBBCode('<font color="#000">test</font>'),
-		'[color=#000000]test[/color]',
+		this.htmlToBBCode('<font color="#0af">test</font>'),
+		'[color=#00aaff]test[/color]',
 		'Font tag color attribute short'
 	);
 
+
 	assert.equal(
-		this.htmlToBBCode('<font color="#000000">test</font>'),
-		'[color=#000000]test[/color]',
+		this.htmlToBBCode('<font color="#0AF">test</font>'),
+		'[color=#00AAFF]test[/color]',
+		'Font tag color attribute short uppercase'
+	);
+
+	assert.equal(
+		this.htmlToBBCode('<font color="#00aaff">test</font>'),
+		'[color=#00aaff]test[/color]',
 		'Font tag color attribute normal'
 	);
 
 	assert.equal(
-		this.htmlToBBCode('<font color="rgb(0,0,0)">test</font>'),
-		'[color=#000000]test[/color]',
+		this.htmlToBBCode('<font color="#0<>">test</font>'),
+		'[color=#0<>]test[/color]',
+		'Font tag color attribute non-hex characters'
+	);
+
+	assert.equal(
+		this.htmlToBBCode('<font color="rgb(0,170,255)">test</font>'),
+		'[color=#00aaff]test[/color]',
 		'Font tag color attribute rgb'
 	);
 });
@@ -770,6 +832,55 @@ QUnit.test('Code', function (assert) {
 		),
 		'[code]ignore this Testing 1.2.3....[/code]\n',
 		'Code with styling'
+	);
+
+	assert.equal(
+		this.htmlToBBCode(
+			'<code><span style="color:#ff0000">test</span></code>'
+		),
+		'[code]test[/code]\n',
+		'Code with inline styling'
+	);
+
+	assert.equal(
+		this.htmlToBBCode(
+			'<code><div style="color:#ff0000">test</div></code>'
+		),
+		'[code]test[/code]\n',
+		'Code with block styling'
+	);
+
+
+	assert.equal(
+		this.htmlToBBCode(
+			'<code><div><div style="color:#ff0000">test</div></div></code>'
+		),
+		'[code]test[/code]\n',
+		'Code with nested block styling'
+	);
+
+	assert.equal(
+		this.htmlToBBCode(
+			'<code><div>line 1</div><div>line 2</div></code>'
+		),
+		'[code]line 1\nline 2[/code]\n',
+		'Code with block lines'
+	);
+
+	assert.equal(
+		this.htmlToBBCode(
+			'<code style="font-weight:bold">test</code>'
+		),
+		'[code]test[/code]\n',
+		'Code with styling'
+	);
+
+	assert.equal(
+		this.htmlToBBCode(
+			'<code><img data-sceditor-emoticon=":)" /></code>'
+		),
+		'[code]:)[/code]\n',
+		'Code with emoticon'
 	);
 });
 
